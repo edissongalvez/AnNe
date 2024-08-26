@@ -31,13 +31,12 @@ export default function TabLayout() {
         options={{
           title: 'Área',
           tabBarIcon: ({ color }) => <TabBarIcon name="map-marker-alert" color={color} />,
-          headerShown: false,
           headerRight: () => (
-            <Link href="/modal" asChild>
+            <Link href="/loginScreen" asChild>
               <Pressable>
                 {({ pressed }) => (
                   <MaterialCommunityIcons
-                    name="information-outline"
+                    name="account"
                     size={25}
                     color={Colors[colorScheme ?? 'light'].textPrimary}
                     style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
@@ -53,7 +52,20 @@ export default function TabLayout() {
         options={{
           title: 'Casos',
           tabBarIcon: ({ color }) => <TabBarIcon name="account-group" color={color} />,
-          headerShown: false
+          headerRight: () => (
+            <Link href="/loginScreen" asChild>
+              <Pressable>
+                {({ pressed }) => (
+                  <MaterialCommunityIcons
+                    name="account"
+                    size={25}
+                    color={Colors[colorScheme ?? 'light'].textPrimary}
+                    style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
+                  />
+                )}
+              </Pressable>
+            </Link>
+          ),
         }}
       />
       <Tabs.Screen
@@ -61,7 +73,20 @@ export default function TabLayout() {
         options={{
           title: 'Diagnóstico',
           tabBarIcon: ({ color }) => <TabBarIcon name="virus" color={color} />,
-          headerShown: false
+          headerRight: () => (
+            <Link href="/loginScreen" asChild>
+              <Pressable>
+                {({ pressed }) => (
+                  <MaterialCommunityIcons
+                    name="account"
+                    size={25}
+                    color={Colors[colorScheme ?? 'light'].textPrimary}
+                    style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
+                  />
+                )}
+              </Pressable>
+            </Link>
+          ),
         }}
       />
     </Tabs>
