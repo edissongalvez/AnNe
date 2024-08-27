@@ -62,7 +62,7 @@ export default function TabThreeScreen() {
 
     axios.post(`${process.env.EXPO_PUBLIC_API_URL}/predict2`, data)
       .then(response =>
-        setResult(`Probabilidad de dengue: ${response.data.result} (${response.data.probability_dengue.toFixed(2)})`)
+        setResult(`Probabilidad de dengue: ${response.data.result} (${response.data.probability_dengue.toFixed(2)})\n\n${response.data.interpretation}`)
       )
       .catch(error => {
         alert(error.message || 'Ocurrió un error')
@@ -81,7 +81,7 @@ export default function TabThreeScreen() {
     }
 
     try {
-      const response = await sendWhatsapp( user.phone, `RESULTADO DE ZONA DE DENGUE:\n\n${result}`, user.token)
+      const response = await sendWhatsapp( user.phone, `RESULTADO DE DIAGNOSTICO DE DENGUE:\n\n${result}`, user.token)
       alert(response.message)
     } catch (error: any) {
       alert('Error al enviar')
@@ -185,7 +185,7 @@ export default function TabThreeScreen() {
             <Text textStyle='Body' colorStyle='Tint'>{result}</Text>
           </View>
           <View style={{ marginTop: 9, paddingHorizontal: 16 }}>
-            <Text textStyle='Footnote' colorStyle='Secondary'>Mimi</Text>
+            <Text textStyle='Footnote' colorStyle='Secondary'>Mimi & Gemini</Text>
           </View>
           <Pressable style={styles.tableRow} onPress={handleSendWhatsapp}>
             <Text textStyle='Body' colorStyle='Tint'>Enviar a WhatsApp</Text>

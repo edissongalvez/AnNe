@@ -50,7 +50,7 @@ export default function TabOneScreen() {
         }
       ])
 
-      setResult(`Regiones: ${response.data.region}\nProvincias: ${response.data.province}\nDistritos: ${response.data.district}`)
+      setResult(`Regiones: ${response.data.region}\nProvincias: ${response.data.province}\nDistritos: ${response.data.district}\n\n${response.data.interpretation}`)
     } catch (error: any) {
       alert('Error al predecir')
     }
@@ -153,7 +153,7 @@ export default function TabOneScreen() {
             <Text textStyle='Body' colorStyle='Tint'>{result}</Text>
           </View>
           <View style={{ marginTop: 9, paddingHorizontal: 16 }}>
-            <Text textStyle='Footnote' colorStyle='Secondary'>Mimi</Text>
+            <Text textStyle='Footnote' colorStyle='Secondary'>Mimi & Gemini</Text>
           </View>
           <Pressable style={styles.tableRow} onPress={handleSendWhatsapp}>
             <Text textStyle='Body' colorStyle='Tint'>Enviar a WhatsApp</Text>

@@ -15,6 +15,8 @@ from sklearn.preprocessing import LabelEncoder
 
 from flask_migrate import Migrate
 
+import google.generativeai as genai
+
 app = Flask(__name__)
 CORS(app)
 
@@ -37,6 +39,12 @@ app.config['MAIL_PASSWORD'] = os.environ.get('EMAIL_PASS')
 # Configuración de JWT
 
 app.config['JWT_SECRET_KEY'] = 'super-secret-key'
+
+# Configuración de Gemini
+
+gemini_key = os.environ.get('GEMINI_API_KEY')
+genai.configure(api_key = gemini_key)
+model = genai.GenerativeModel('gemini-pro')
 
 # Inicializar extensiones
 
@@ -107,7 +115,6 @@ def send_email():
 def send_whatsapp():
     try:
         data = request.get_json()
-        print(data)
         message = twilio_client.messages.create(
             body = data['message'],
             from_ = 'whatsapp:+14155238886',
@@ -234,16 +241,16 @@ def predict():
         region_prediction = region_model.predict(X_new_data)
 
         provincial_name_prediction = [province_map[p] for p in province_prediction]
-        print(provincial_name_prediction)
         district_name_prediction = [district_map[d] for d in district_prediction]
-        print(district_name_prediction)
         regional_name_prediction = [region_map[r] for r in region_prediction]
-        print(regional_name_prediction)
+
+        interpretation = model.generate_content(f"En menos de 128 palabras y según los resultados, ¿qué sitios recomiendas evitar visitar y qué recomendaciones recomiendas tomar para no contagiarme de dengue en este lugar?: Provincia - {provincial_name_prediction}; Distrito - {district_name_prediction}; Region - {regional_name_prediction}: Datos - {data}.")
 
         return jsonify({
             "region": regional_name_prediction,
             "province": provincial_name_prediction,
-            "district": district_name_prediction
+            "district": district_name_prediction,
+            "interpretation": interpretation.text
         })
     
     except Exception as e:
@@ -267,7 +274,9 @@ def predict1():
 
         prediction = model1.predict(new_case)
 
-        return jsonify({'result': prediction[0]})
+        interpretation = model.generate_content(f"En menos de 128 palabras y según los resultados, ¿qué plan de contingencia de debería aplicar para combatir el dengue?: Número de casos - {prediction[0]}; Datos - {data}")
+
+        return jsonify({'result': prediction[0], 'interpretation': interpretation.text})
     
     except Exception as e:
         print(e)
@@ -294,9 +303,12 @@ def predict2():
         result = class_map.get(prediction[0], 'Desconocido')
         probability_dengue = probability[0][1]
 
+        interpretation = model.generate_content(f"En menos de 128 palabras y según los resultados, ¿qué enfermedad puedo tener y qué tratamiento puedo seguir?: Probabilidad de dengue - {result} ({probability_dengue}); Sintomas - {data}.")
+
         return jsonify({
             'result': result,
-            'probability_dengue': probability_dengue
+            'probability_dengue': probability_dengue,
+            'interpretation': interpretation.text
         })
 
     except Exception as e:

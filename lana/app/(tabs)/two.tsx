@@ -68,7 +68,7 @@ export default function TabTwoScreen() {
         }
       ])
 
-      setResult(`${response.data.result.toFixed(2)} casos de dengue`)
+      setResult(`${response.data.result.toFixed(2)} casos de dengue\n\n${response.data.interpretation}`)
     } catch (error: any) {
       alert('Error al predecir')
     }
@@ -86,7 +86,7 @@ export default function TabTwoScreen() {
     }
 
     try {
-      const response = await sendWhatsapp( user.phone, `RESULTADO DE ZONA DE DENGUE:\n\n${result}`, user.token)
+      const response = await sendWhatsapp( user.phone, `RESULTADO DE CASOS DE DENGUE:\n\n${result}`, user.token)
       alert(response.message)
     } catch (error: any) {
       alert('Error al enviar')
