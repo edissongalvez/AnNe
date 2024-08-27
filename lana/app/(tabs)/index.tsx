@@ -1,20 +1,41 @@
 import { Text } from '@/components/Text'
+import { AuthContext } from '@/contexts/AuthContext'
+import { sendEmail, sendWhatsapp } from '@/services/authService'
 import { Picker } from '@react-native-picker/picker'
 import axios from 'axios'
-import { useState } from 'react'
-import { Button, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native'
+import { useContext, useState } from 'react'
+import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native'
 
 export default function TabOneScreen() {
-  const [month, setMonth] = useState<string>('')
+  const [month, setMonth] = useState<string>('1')
   const [age, setAge] = useState<string>('')
-  const [sex, setSex] = useState<string>('')
+  const [sex, setSex] = useState<string>('1')
   const [temperature, setTemperature] = useState<string>('')
-  const [disease, setDisease] = useState<string>('')
+  const [disease, setDisease] = useState<string>('0')
+  
   const [result, setResult] = useState<string>('')
+
+  const authContext = useContext(AuthContext)
+
+  if (!authContext) {
+    return null
+  }
+
+  const { user } = authContext
 
   const handleSubmit = async () => {
     if (!month || !age || !sex || !temperature || !disease) {
       alert('Datos incompletos')
+      console.log(month)
+      console.log(age)
+      console.log(sex)
+      console.log(temperature)
+      console.log(disease)
+      return
+    }
+
+    if (isNaN(parseInt(age, 10)) || isNaN(parseInt(temperature, 10)) || parseInt(age, 10) < 0 || parseInt(age, 10) > 70 || parseInt(temperature, 10) < 20 || parseInt(temperature, 10) > 35) {
+      alert('Datos incorrectos')
       return
     }
 
@@ -35,6 +56,25 @@ export default function TabOneScreen() {
     }
   }
 
+  const handleSendWhatsapp = async () => {
+    if (!user) {
+      alert('Inicie sesión')
+      return
+    }
+
+    if (!result) {
+      alert('Sin nada que enviar')
+      return
+    }
+
+    try {
+      const response = await sendWhatsapp( user.phone, `RESULTADO DE ZONA DE DENGUE:\n\n${result}`, user.token)
+      alert(response.message)
+    } catch (error: any) {
+      alert('Error al enviar')
+    }
+  }
+
   return (   
     <ScrollView style={styles.container}>
       <Text textStyle='Headline' colorStyle='Secondary'>OBJETIVO 1</Text>
@@ -45,7 +85,7 @@ export default function TabOneScreen() {
       <View style={styles.groupedList}>
         <View style={styles.row}>
           <View style={styles.title}>
-            <Text textStyle='Body' colorStyle='Primary'>Mes:</Text> 
+            <Text textStyle='Body' colorStyle='Primary'>Mes</Text> 
           </View>
           <Picker style={styles.textField} selectedValue={month} onValueChange={(itemValue, itemIndex) => setMonth(itemValue)}>
             <Picker.Item label='Enero' value='1' />
@@ -65,14 +105,14 @@ export default function TabOneScreen() {
         <View style={styles.separator} />
         <View style={styles.row}>
           <View style={styles.title}>
-            <Text textStyle='Body' colorStyle='Primary'>Edad:</Text> 
+            <Text textStyle='Body' colorStyle='Primary'>Edad</Text> 
           </View>
-          <TextInput style={styles.textField} value={age} onChangeText={setAge} keyboardType='numeric' placeholder='Ingresar edad' placeholderTextColor='#c5c5c7' />
+          <TextInput style={styles.textField} value={age} onChangeText={setAge} keyboardType='numeric' placeholder='Ingresar 1-70' placeholderTextColor='#c5c5c7' />
         </View>
         <View style={styles.separator} />
         <View style={styles.row}>
           <View style={styles.title}>
-            <Text textStyle='Body' colorStyle='Primary'>Sexo:</Text> 
+            <Text textStyle='Body' colorStyle='Primary'>Sexo</Text> 
           </View>
           <Picker style={styles.textField} selectedValue={sex} onValueChange={(itemValue, itemIndex) => setSex(itemValue)}>
             <Picker.Item label='Mujer' value='1' />
@@ -82,14 +122,14 @@ export default function TabOneScreen() {
         <View style={styles.separator} />
         <View style={styles.row}>
           <View style={styles.title}>
-            <Text textStyle='Body' colorStyle='Primary'>Temperatura:</Text> 
+            <Text textStyle='Body' colorStyle='Primary'>Temperatura</Text> 
           </View>
-          <TextInput style={styles.textField} value={temperature} onChangeText={setTemperature} keyboardType='numeric' placeholder='Ingresar temperatura' placeholderTextColor='#c5c5c7' />
+          <TextInput style={styles.textField} value={temperature} onChangeText={setTemperature} keyboardType='numeric' placeholder='Ingresar 20°-35°' placeholderTextColor='#c5c5c7' />
         </View>
         <View style={styles.separator} />
         <View style={styles.row}>
           <View style={styles.title}>
-            <Text textStyle='Body' colorStyle='Primary'>Dengue:</Text> 
+            <Text textStyle='Body' colorStyle='Primary'>Dengue</Text> 
           </View>
           <Picker style={styles.textField} selectedValue={disease} onValueChange={(itemValue, itemIndex) => setDisease(itemValue)}>
             <Picker.Item label='Sí' value='1' />
@@ -97,8 +137,8 @@ export default function TabOneScreen() {
           </Picker>
         </View>
       </View>
-      <View style={{ marginTop: 9,  paddingHorizontal: 16 }}>
-        <Text textStyle='Footnote' colorStyle='Secondary'>Predice las zonas con dengue</Text>
+      <View style={{ marginTop: 9,  paddingHorizontal: 16, maxWidth: 640, }}>
+        <Text textStyle='Footnote' colorStyle='Secondary'>Modelo predictivo para identificar áreas de alto riesgo de dengue, utilizando datos como mes, edad, sexo, temperatura, y casos confirmados de dengue.</Text>
       </View>
       <Pressable style={styles.tableRow} onPress={handleSubmit}>
         <Text textStyle='Body' colorStyle='Tint'>Predecir</Text>
@@ -115,6 +155,9 @@ export default function TabOneScreen() {
           <View style={{ marginTop: 9, paddingHorizontal: 16 }}>
             <Text textStyle='Footnote' colorStyle='Secondary'>Mimi</Text>
           </View>
+          <Pressable style={styles.tableRow} onPress={handleSendWhatsapp}>
+            <Text textStyle='Body' colorStyle='Tint'>Enviar a WhatsApp</Text>
+          </Pressable>
         </>
       }
     </ScrollView> 
@@ -154,7 +197,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 16
   },
   title: {
-    width: 100
+    width: 200
   },
   textField: {
     flex: 1,

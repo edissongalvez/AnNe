@@ -13,6 +13,7 @@ interface LoginData {
 }
 
 interface LoginResponse {
+    phone: string
     token: string
     email: string
 }
@@ -30,6 +31,7 @@ export const registerUser = async (data: RegisterData) => {
 export const loginUser = async (data: LoginData): Promise<LoginResponse> => {
     try {
         const response = await axios.post(`${process.env.EXPO_PUBLIC_API_URL}/login`, data)
+        console.log(response.data)
         return response.data
     } catch (error: any) {
         console.error('Error en el inicio de sesión:', error.response ? error.response.data : error.message)
@@ -37,9 +39,9 @@ export const loginUser = async (data: LoginData): Promise<LoginResponse> => {
     }
 }
 
-export const sendEmail = async (subject: string, to: string, message: string) => {
+export const sendEmail = async (subject: string, to: string, message: string, token: string) => {
     try {
-        const response = await axios.post(`${process.env.EXPO_PUBLIC_API_URL}/send_email`, { subject, to, message })
+        const response = await axios.post(`${process.env.EXPO_PUBLIC_API_URL}/send_email`, { subject, to, message }, { headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` } })
         return response.data
     } catch (error: any) {
         console.error('Correo no enviado', error.response ? error.response.data : error.message)
@@ -47,12 +49,12 @@ export const sendEmail = async (subject: string, to: string, message: string) =>
     }
 }
 
-export const sendWhatsapp = async (to: string, message: string) => {
+export const sendWhatsapp = async (to: string, message: string, token: string) => {
     try {
-        const response = await axios.post(`${process.env.EXPO_PUBLIC_API_URL}/send_whatsapp`, { to, message })
+        const response = await axios.post(`${process.env.EXPO_PUBLIC_API_URL}/send_whatsapp`, { to, message }, { headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` } })
         return response.data
     } catch (error: any) {
-        console.error('Correo no enviado', error.response ? error.response.data : error.message)
+        console.error('Mensaje de WhatsApp no enviado', error.response ? error.response.data : error.message)
         throw error
     }
 }

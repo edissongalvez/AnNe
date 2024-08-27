@@ -1,11 +1,9 @@
-import { Button } from '@/components/Button'
-import { DropDown } from '@/components/DropDown'
 import { Text } from '@/components/Text'
 import { AuthContext } from '@/contexts/AuthContext'
+import { sendWhatsapp } from '@/services/authService'
 import axios from 'axios'
-import { router } from 'expo-router'
 import { useContext, useState } from 'react'
-import { Alert, Pressable, ScrollView, StyleSheet, Switch, View } from 'react-native'
+import { Pressable, ScrollView, StyleSheet, Switch, View } from 'react-native'
 
 interface FormData {
   fiebre: boolean
@@ -21,7 +19,6 @@ interface FormData {
 }
 
 export default function TabThreeScreen() {
-  const authContext = useContext(AuthContext)
   const [formData, setFormData] = useState<FormData>({
     fiebre: false,
     cefalea: false,
@@ -35,6 +32,8 @@ export default function TabThreeScreen() {
     caida_plaq: false
   })
   const [result, setResult] = useState<string>()
+
+  const authContext = useContext(AuthContext)
 
   if (!authContext) {
     return null
@@ -63,49 +62,136 @@ export default function TabThreeScreen() {
 
     axios.post(`${process.env.EXPO_PUBLIC_API_URL}/predict2`, data)
       .then(response =>
-        setResult(`Probabilidad de dengue: ${response.data.result} (${response.data.probability_dengue})`)
+        setResult(`Probabilidad de dengue: ${response.data.result} (${response.data.probability_dengue.toFixed(2)})`)
       )
       .catch(error => {
         alert(error.message || 'Ocurrió un error')
       })
   }
 
+  const handleSendWhatsapp = async () => {
+    if (!user) {
+      alert('Inicie sesión')
+      return
+    }
+
+    if (!result) {
+      alert('Sin nada que enviar')
+      return
+    }
+
+    try {
+      const response = await sendWhatsapp( user.phone, `RESULTADO DE ZONA DE DENGUE:\n\n${result}`, user.token)
+      alert(response.message)
+    } catch (error: any) {
+      alert('Error al enviar')
+    }
+  }
+
   return (
     <ScrollView style={styles.container}>
-          <Text textStyle='Headline' colorStyle='Secondary'>OBJETIVO 3</Text>
-          <Text textStyle='Title1' colorStyle='Primary'>Diagnóstico de dengue</Text>
-          <View style={styles.groupedList}>
-            {Object.keys(formData).map(key => (
-              <View key={key}>
-                <View style={styles.switchContainer}>
-                  <Text textStyle='Body' colorStyle='Primary'>{key}</Text>
-                  <Switch
-                    value={formData[key as keyof FormData]}
-                    onValueChange={() => handleToggleSwitch(key as keyof FormData)}
-                  />
-                </View>
-                <View style={styles.separator} />
-              </View>
-            ))}
+      <Text textStyle='Headline' colorStyle='Secondary'>OBJETIVO 3</Text>
+      <Text textStyle='Title1' colorStyle='Primary'>Diagnóstico de dengue</Text>
+      <View style={{ marginTop: 37, paddingHorizontal: 16 }}>
+        <Text textStyle='Footnote' colorStyle='Secondary'>FORMULARIO</Text>
+      </View>
+      <View style={styles.groupedList}>
+
+        <View style={styles.row}>
+          <View style={styles.title}>
+            <Text textStyle='Body' colorStyle='Primary'>Fiebre</Text> 
           </View>
+          <Switch value={formData.fiebre} onValueChange={() => handleToggleSwitch('fiebre')} trackColor={{false: 'rgba(120, 120, 128, .16)', true: 'rgba(255, 149, 0, 1)'}} />
+        </View>
+        <View style={styles.separator} />
+        <View style={styles.row}>
+          <View style={styles.title}>
+            <Text textStyle='Body' colorStyle='Primary'>Cefalea</Text> 
+          </View>
+          <Switch value={formData.cefalea} onValueChange={() => handleToggleSwitch('cefalea')} trackColor={{false: 'rgba(120, 120, 128, .16)', true: 'rgba(255, 149, 0, 1)'}} />
+        </View>
+        <View style={styles.separator} />
+        <View style={styles.row}>
+          <View style={styles.title}>
+            <Text textStyle='Body' colorStyle='Primary'>Dolor retro-ocular</Text> 
+          </View>
+          <Switch value={formData.dolrretroo} onValueChange={() => handleToggleSwitch('dolrretroo')} trackColor={{false: 'rgba(120, 120, 128, .16)', true: 'rgba(255, 149, 0, 1)'}} />
+        </View>
+        <View style={styles.separator} />
+        <View style={styles.row}>
+          <View style={styles.title}>
+            <Text textStyle='Body' colorStyle='Primary'>Mialgias</Text> 
+          </View>
+          <Switch value={formData.malgias} onValueChange={() => handleToggleSwitch('malgias')} trackColor={{false: 'rgba(120, 120, 128, .16)', true: 'rgba(255, 149, 0, 1)'}} />
+        </View>
+        <View style={styles.separator} />
+        <View style={styles.row}>
+          <View style={styles.title}>
+            <Text textStyle='Body' colorStyle='Primary'>Artralgia</Text> 
+          </View>
+          <Switch value={formData.artralgia} onValueChange={() => handleToggleSwitch('artralgia')} trackColor={{false: 'rgba(120, 120, 128, .16)', true: 'rgba(255, 149, 0, 1)'}} />
+        </View>
+        <View style={styles.separator} />
+        <View style={styles.row}>
+          <View style={styles.title}>
+            <Text textStyle='Body' colorStyle='Primary'>Erupción</Text> 
+          </View>
+          <Switch value={formData.erupcionr} onValueChange={() => handleToggleSwitch('erupcionr')} trackColor={{false: 'rgba(120, 120, 128, .16)', true: 'rgba(255, 149, 0, 1)'}} />
+        </View>
+        <View style={styles.separator} />
+        <View style={styles.row}>
+          <View style={styles.title}>
+            <Text textStyle='Body' colorStyle='Primary'>Dolor abdominal</Text> 
+          </View>
+          <Switch value={formData.dolor_abdo} onValueChange={() => handleToggleSwitch('dolor_abdo')} trackColor={{false: 'rgba(120, 120, 128, .16)', true: 'rgba(255, 149, 0, 1)'}} />
+        </View>
+        <View style={styles.separator} />
+        <View style={styles.row}>
+          <View style={styles.title}>
+            <Text textStyle='Body' colorStyle='Primary'>Vómito</Text> 
+          </View>
+          <Switch value={formData.vomito} onValueChange={() => handleToggleSwitch('vomito')} trackColor={{false: 'rgba(120, 120, 128, .16)', true: 'rgba(255, 149, 0, 1)'}} />
+        </View>
+        <View style={styles.separator} />
+        <View style={styles.row}>
+          <View style={styles.title}>
+            <Text textStyle='Body' colorStyle='Primary'>Diarrea</Text> 
+          </View>
+          <Switch value={formData.diarrea} onValueChange={() => handleToggleSwitch('diarrea')} trackColor={{false: 'rgba(120, 120, 128, .16)', true: 'rgba(255, 149, 0, 1)'}} />
+        </View>
+        <View style={styles.separator} />
+        <View style={styles.row}>
+          <View style={styles.title}>
+            <Text textStyle='Body' colorStyle='Primary'>Caída de plaquetas</Text> 
+          </View>
+          <Switch value={formData.caida_plaq} onValueChange={() => handleToggleSwitch('caida_plaq')} trackColor={{false: 'rgba(120, 120, 128, .16)', true: 'rgba(255, 149, 0, 1)'}} />
+        </View>
 
-          <Pressable style={styles.tableRow} onPress={handleSubmit}>
-            <Text textStyle='Body' colorStyle='Tint'>Predecir</Text>
+      </View>
+
+      <View style={{ marginTop: 9,  paddingHorizontal: 16, maxWidth: 640, }}>
+        <Text textStyle='Footnote' colorStyle='Secondary'>Modelo predictivo para detectar la presencia de dengue en pacientes, usando síntomas clínicos como fiebre, dolor, erupciones, y caída de plaquetas.</Text>
+      </View>
+      <Pressable style={styles.tableRow} onPress={handleSubmit}>
+        <Text textStyle='Body' colorStyle='Tint'>Predecir</Text>
+      </Pressable>
+
+      {result && 
+        <>
+          <View style={{ marginTop: 37, paddingHorizontal: 16 }}>
+            <Text textStyle='Footnote' colorStyle='Secondary'>RESULTADO</Text>
+          </View>
+          <View style={styles.result}>
+            <Text textStyle='Body' colorStyle='Tint'>{result}</Text>
+          </View>
+          <View style={{ marginTop: 9, paddingHorizontal: 16 }}>
+            <Text textStyle='Footnote' colorStyle='Secondary'>Mimi</Text>
+          </View>
+          <Pressable style={styles.tableRow} onPress={handleSendWhatsapp}>
+            <Text textStyle='Body' colorStyle='Tint'>Enviar a WhatsApp</Text>
           </Pressable>
-
-          {result && 
-            <>
-              <View style={{ marginTop: 37, paddingHorizontal: 16 }}>
-                <Text textStyle='Footnote' colorStyle='Secondary'>RESULTADO</Text>
-              </View>
-              <View style={styles.result}>
-                <Text textStyle='Body' colorStyle='Tint'>{result}</Text>
-              </View>
-              <View style={{ marginTop: 9, paddingHorizontal: 16 }}>
-                <Text textStyle='Footnote' colorStyle='Secondary'>Mimi</Text>
-              </View>
-            </>
-          }
+        </>
+      }
     </ScrollView>
   )
 }
@@ -133,7 +219,8 @@ const styles = StyleSheet.create({
     height: 44,
     paddingHorizontal: 16,
     flexDirection: 'row',
-    alignItems: 'center'
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   tableRow: {
     height: 44,
@@ -150,7 +237,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 16
   },
   title: {
-    width: 100
+    width: 200
   },
   textField: {
     flex: 1,

@@ -30,6 +30,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USE_SSL'] = False
 app.config['MAIL_USERNAME'] = os.environ.get('EMAIL_USER')
 app.config['MAIL_PASSWORD'] = os.environ.get('EMAIL_PASS')
 
@@ -83,8 +84,8 @@ def login():
     data = request.get_json()
     user = User.query.filter_by(username = data['username']).first()
     if user and bcrypt.check_password_hash(user.password, data['password']):
-        access_token = create_access_token(identity = {'sername': user.username, 'email': user.email})
-        return jsonify({'token': access_token})
+        access_token = create_access_token(identity = {'username': user.username, 'email': user.email})
+        return jsonify({ 'username': user.username, 'email': user.email, 'phone': user.phone, 'token': access_token})
     return jsonify({'message': 'Credenciales incorrectas'}), 401
 
 # Enviar correo electrónico
@@ -104,13 +105,19 @@ def send_email():
 @app.route('/send_whatsapp', methods = ['POST'])
 @jwt_required()
 def send_whatsapp():
-    data = request.get_json()
-    message = twilio_client.messages.create(
-        body = data['message'],
-        from_ = 'whatsapp:+14155238886',
-        to = f"whatsapp:{data['to']}"
-    )
-    return jsonify({'message': 'Mensaje de WhatsApp enviado'})
+    try:
+        data = request.get_json()
+        print(data)
+        message = twilio_client.messages.create(
+            body = data['message'],
+            from_ = 'whatsapp:+14155238886',
+            to = f"whatsapp:+51{data['to']}"
+        )
+        return jsonify({'message': 'Mensaje de WhatsApp enviado'})
+    
+    except Exception as e:
+        print(e)
+        return jsonify({'error': str(e)}), 400
 
 @app.route('/')
 def home():

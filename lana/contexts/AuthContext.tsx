@@ -4,6 +4,7 @@ import { createContext, ReactNode, useEffect, useState } from 'react'
 interface User {
     username: string
     email: string
+    phone: string
     token: string
 }
 
